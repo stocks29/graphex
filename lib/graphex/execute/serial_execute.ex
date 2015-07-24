@@ -1,14 +1,16 @@
 defmodule Graphex.Execute.SerialExecute do
   require Logger
 
+  alias Graphex.Dag
+
   def exec_bf(dag) do
-    exec_bf(dag, start_vs(dag), %{})
+    exec_bf(dag, Dag.start_vs(dag), %{})
   end
 
   defp exec_bf(_dag, [], results), do: results
   defp exec_bf(dag, [vert|verts], results) do
     Logger.debug "considering vertex #{inspect vert}"
-    more_out_verts = out_virts(dag, :digraph.out_edges(dag, vert))
+    more_out_verts = Dag.out_virts(dag, :digraph.out_edges(dag, vert))
     {results, new_verts} = process_vertex_if_deps_met(dag, vert, verts, results)
     exec_bf(dag, Enum.uniq(new_verts ++ more_out_verts), results)
   end
@@ -47,25 +49,6 @@ defmodule Graphex.Execute.SerialExecute do
   def deps_satisfied?([], _results, t_or_f), do: t_or_f
   def deps_satisfied?([h|t], results, true) do
     deps_satisfied?(t, results, Map.has_key?(results,h))
-  end
-
-  def start_vs(dag) do
-    for v <- :digraph.vertices(dag),
-      in_edges = :digraph.in_edges(dag, v),
-      length(in_edges) == 0 do
-        v
-    end
-  end
-
-  def out_virts(dag, edges) do
-    for e <- edges do
-      out_virt dag, e
-    end
-  end
-
-  def out_virt(dag, e) do
-    {^e, _, v, _} = :digraph.edge(dag, e)
-    v
   end
 
   def wrap_deps_only_fn(fun, deps) do

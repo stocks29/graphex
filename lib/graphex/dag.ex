@@ -20,4 +20,40 @@ defmodule Graphex.Dag do
     end
     :ok
   end
+
+  def out_virts(dag, edges) do
+    for e <- edges do
+      out_virt dag, e
+    end
+  end
+
+  def out_virt(dag, e) do
+    {^e, _, v, _} = :digraph.edge(dag, e)
+    v
+  end
+
+  def in_vertices(dag, edges) do
+    for e <- edges do
+      in_vertex dag, e
+    end
+  end
+
+  def in_vertex(dag, e) do
+    {^e, v, _, _} = :digraph.edge(dag, e)
+    v
+  end
+
+  def start_vs(dag) do
+    for v <- :digraph.vertices(dag),
+      in_edges = :digraph.in_edges(dag, v),
+      length(in_edges) == 0 do
+        v
+    end
+  end
+
+  def downstreams(dag, v) do
+    edges = :digraph.in_edges(dag, v)
+    in_vertices(dag, edges)
+  end
+
 end
