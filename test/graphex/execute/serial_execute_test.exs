@@ -2,6 +2,7 @@ defmodule Graphex.Execute.SerialExecuteTest do
   use ExUnit.Case, async: true
 
   alias Graphex.Execute.SerialExecute, as: SE
+  alias Graphex.Dag
 
   test "graph executed in proper order" do
     # given
@@ -59,51 +60,25 @@ defmodule Graphex.Execute.SerialExecuteTest do
   end
 
   def test_graph_deps do
-    dag = :digraph.new([:acyclic])
-
     fun = fn results -> Map.keys(results)  end
 
-    :digraph.add_vertex(dag, :a, %{fun: fun, deps: []})
-    :digraph.add_vertex(dag, :b, %{fun: fun, deps: [:a]})
-    :digraph.add_vertex(dag, :c, %{fun: fun, deps: [:a]})
-    :digraph.add_vertex(dag, :d, %{fun: fun, deps: [:a]})
-    :digraph.add_vertex(dag, :e, %{fun: fun, deps: [:b, :c, :d]})
-    :digraph.add_vertex(dag, :f, %{fun: fun, deps: [:a, :e]})
-
-    :digraph.add_edge(dag, :a, :f)
-    :digraph.add_edge(dag, :a, :b)
-    :digraph.add_edge(dag, :a, :c)
-    :digraph.add_edge(dag, :a, :d)
-
-    :digraph.add_edge(dag, :b, :e)
-    :digraph.add_edge(dag, :c, :e)
-    :digraph.add_edge(dag, :d, :e)
-    :digraph.add_edge(dag, :e, :f)
-
-    dag
+    Dag.new()
+    |> Dag.add_vertex(name: :a, fun: fun, deps: [])
+    |> Dag.add_vertex(name: :b, fun: fun, deps: [:a])
+    |> Dag.add_vertex(name: :c, fun: fun, deps: [:a])
+    |> Dag.add_vertex(name: :d, fun: fun, deps: [:a])
+    |> Dag.add_vertex(name: :e, fun: fun, deps: [:b, :c, :d])
+    |> Dag.add_vertex(name: :f, fun: fun, deps: [:a, :e])
   end
 
   def test_graph_order do
-    dag = :digraph.new([:acyclic])
-
-    :digraph.add_vertex(dag, :a, %{fun: fn _ -> 0 end, deps: []})
-    :digraph.add_vertex(dag, :b, %{fun: incr_dep(:a), deps: [:a]})
-    :digraph.add_vertex(dag, :c, %{fun: incr_dep(:a), deps: [:a]})
-    :digraph.add_vertex(dag, :d, %{fun: incr_dep(:a), deps: [:a]})
-    :digraph.add_vertex(dag, :e, %{fun: incr_dep(:b), deps: [:b, :c, :d]})
-    :digraph.add_vertex(dag, :f, %{fun: incr_dep(:e), deps: [:a, :e]})
-
-    :digraph.add_edge(dag, :a, :f)
-    :digraph.add_edge(dag, :a, :b)
-    :digraph.add_edge(dag, :a, :c)
-    :digraph.add_edge(dag, :a, :d)
-
-    :digraph.add_edge(dag, :b, :e)
-    :digraph.add_edge(dag, :c, :e)
-    :digraph.add_edge(dag, :d, :e)
-    :digraph.add_edge(dag, :e, :f)
-
-    dag
+    Dag.new()
+    |> Dag.add_vertex(name: :a, fun: fn _ -> 0 end, deps: [])
+    |> Dag.add_vertex(name: :b, fun: incr_dep(:a), deps: [:a])
+    |> Dag.add_vertex(name: :c, fun: incr_dep(:a), deps: [:a])
+    |> Dag.add_vertex(name: :d, fun: incr_dep(:a), deps: [:a])
+    |> Dag.add_vertex(name: :e, fun: incr_dep(:b), deps: [:b, :c, :d])
+    |> Dag.add_vertex(name: :f, fun: incr_dep(:e), deps: [:a, :e])
   end
 
 end
