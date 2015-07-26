@@ -5,6 +5,8 @@ defmodule Graphex.Mixfile do
     [app: :graphex,
      version: "0.0.1",
      elixir: "~> 1.0",
+     description: description,
+     package: package,
      deps: deps]
   end
 
@@ -13,6 +15,18 @@ defmodule Graphex.Mixfile do
   # Type `mix help compile.app` for more information
   def application do
     [applications: [:logger]]
+  end
+
+  def description do
+    """
+    A task graph execution library for elixir
+    """
+  end
+
+  def package do
+    [contributors: ["Bob Stockdale", "Mike Brennan"],
+     licenses: ["MIT License"],
+     links: %{"GitHub" => "https://github.com/stocks29/graphex"}]
   end
 
   # Dependencies can be Hex packages:
