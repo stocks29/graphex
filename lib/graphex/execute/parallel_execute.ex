@@ -11,7 +11,7 @@ defmodule Graphex.Execute.ParallelExecute do
 
   defp accumulate_results(dag) do
     Logger.debug("waiting for results")
-    Enum.reduce(:digraph.vertices(dag), %{}, fn _v, acc ->
+    Enum.reduce(Dag.vertices(dag), %{}, fn _v, acc ->
       receive do
         {:result, name, result} ->
           Logger.debug("accumulator received result from #{inspect name}: #{inspect result}")
@@ -38,8 +38,8 @@ defmodule Graphex.Execute.ParallelExecute do
   end
 
   defp init_processes(dag) do
-    for v <- :digraph.vertices(dag) do
-      {v, label} = :digraph.vertex(dag, v)
+    for v <- Dag.vertices(dag) do
+      {v, label} = Dag.vertex(dag, v)
       {v, spawn_node(v, label[:deps], label[:fun])}
     end
   end
@@ -86,26 +86,5 @@ defmodule Graphex.Execute.ParallelExecute do
       send downstream, {:result, name, result}
     end)
   end
-
-  #######
-  # Result receiver loop
-  #######
-
-  # defp spawn_result_receiver() do
-  #   spawn_link(fn ->
-  #     result_receiver_loop(:waiting);
-  #   end)
-  # end
-  #
-  # defp result_receiver_loop(:holding, result) do
-  #   receive do
-  #     {:get, pid, result} -> send pid, result
-  #   end
-  # end
-  # defp result_receiver_loop(:waiting) do
-  #   receive do
-  #     {:result, _dep, result} -> result
-  #   end
-  # end
 
 end

@@ -63,22 +63,22 @@ defmodule Graphex.Execute.SerialExecuteTest do
     fun = fn results -> Map.keys(results)  end
 
     Dag.new()
-    |> Dag.add_vertex(name: :a, fun: fun, deps: [])
-    |> Dag.add_vertex(name: :b, fun: fun, deps: [:a])
-    |> Dag.add_vertex(name: :c, fun: fun, deps: [:a])
-    |> Dag.add_vertex(name: :d, fun: fun, deps: [:a])
-    |> Dag.add_vertex(name: :e, fun: fun, deps: [:b, :c, :d])
-    |> Dag.add_vertex(name: :f, fun: fun, deps: [:a, :e])
+    |> Dag.add_vertex_and_edges(name: :a, fun: fun, deps: [])
+    |> Dag.add_vertex_and_edges(name: :b, fun: fun, deps: [:a])
+    |> Dag.add_vertex_and_edges(name: :c, fun: fun, deps: [:a])
+    |> Dag.add_vertex_and_edges(name: :d, fun: fun, deps: [:a])
+    |> Dag.add_vertex_and_edges(name: :e, fun: fun, deps: [:b, :c, :d])
+    |> Dag.add_vertex_and_edges(name: :f, fun: fun, deps: [:a, :e])
   end
 
   def test_graph_order do
     Dag.new()
-    |> Dag.add_vertex(name: :a, fun: fn _ -> 0 end, deps: [])
-    |> Dag.add_vertex(name: :b, fun: incr_dep(:a), deps: [:a])
-    |> Dag.add_vertex(name: :c, fun: incr_dep(:a), deps: [:a])
-    |> Dag.add_vertex(name: :d, fun: incr_dep(:a), deps: [:a])
-    |> Dag.add_vertex(name: :e, fun: incr_dep(:b), deps: [:b, :c, :d])
-    |> Dag.add_vertex(name: :f, fun: incr_dep(:e), deps: [:a, :e])
+    |> Dag.add_vertex_and_edges(name: :a, fun: fn _ -> 0 end, deps: [])
+    |> Dag.add_vertex_and_edges(name: :b, fun: incr_dep(:a), deps: [:a])
+    |> Dag.add_vertex_and_edges(name: :c, fun: incr_dep(:a), deps: [:a])
+    |> Dag.add_vertex_and_edges(name: :d, fun: incr_dep(:a), deps: [:a])
+    |> Dag.add_vertex_and_edges(name: :e, fun: incr_dep(:b), deps: [:b, :c, :d])
+    |> Dag.add_vertex_and_edges(name: :f, fun: incr_dep(:e), deps: [:a, :e])
   end
 
 end

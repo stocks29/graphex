@@ -4,19 +4,19 @@ defmodule Graphex.Execute.SerialExecute do
   alias Graphex.Dag
 
   def exec_bf(dag) do
-    exec_bf(dag, Dag.start_vs(dag), %{})
+    exec_bf(dag, Dag.start_verticies(dag), %{})
   end
 
   defp exec_bf(_dag, [], results), do: results
   defp exec_bf(dag, [vert|verts], results) do
     Logger.debug "considering vertex #{inspect vert}"
-    more_out_verts = Dag.out_virts(dag, :digraph.out_edges(dag, vert))
+    out_neighbors = Dag.downstreams(dag, vert)
     {results, new_verts} = process_vertex_if_deps_met(dag, vert, verts, results)
-    exec_bf(dag, Enum.uniq(new_verts ++ more_out_verts), results)
+    exec_bf(dag, Enum.uniq(new_verts ++ out_neighbors), results)
   end
 
   defp process_vertex_if_deps_met(dag, vert, verts, results) do
-    {^vert, label} = :digraph.vertex(dag, vert)
+    {^vert, label} = Dag.vertex(dag, vert)
     deps = label[:deps]
     fun = wrap_deps_only_fn(label[:fun], deps)
     if deps_satisfied?(deps, results) do
