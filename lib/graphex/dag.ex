@@ -123,7 +123,7 @@ defmodule Graphex.Dag do
   @doc """
   Get the list of in-verticies for the given list of edges
   """
-  @spec in_verticies(dag, [Graphex.edges]) :: [Graphex.vertex]
+  @spec in_verticies(dag, [Graphex.edge]) :: [Graphex.vertex]
   def in_verticies(dag, edges) do
     for e <- edges do
       in_vertex dag, e
@@ -145,8 +145,7 @@ defmodule Graphex.Dag do
   @spec start_verticies(dag) :: [Graphex.vertex]
   def start_verticies(dag) do
     for v <- vertices(dag),
-      in_edges = :digraph.in_edges(dag, v),
-      length(in_edges) == 0 do
+      length(:digraph.in_edges(dag, v)) == 0 do
         v
     end
   end
