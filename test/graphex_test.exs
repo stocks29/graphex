@@ -76,6 +76,17 @@ defmodule GraphexTest do
     assert result == 3
   end
 
+  test "can compose webpage" do
+    result = exec_graph :wrapper, [
+      [name: :greeting, fun: fn _ -> "Hi" end],
+      [name: :user, fun: fn _ -> "Joe" end],
+      [name: :message, fun: fn r -> "#{r[:greeting]} #{r[:user]}" end, deps: [:greeting, :user]],
+      [name: :content, fun: fn r -> "<h1>#{r[:message]}</h1>" end, deps: [:message]],
+      [name: :wrapper, fun: fn r -> "<html><head></head><body>#{r[:content]}</body></html>" end, deps: [:content]],
+    ]
+    assert result == "<html><head></head><body><h1>Hi Joe</h1></body></html>"
+  end
+
   defp incr(node) do
     fn r ->
       r[node] + 1
