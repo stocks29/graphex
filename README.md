@@ -1,6 +1,8 @@
 Graphex
 =======
 
+[![Build Status](https://travis-ci.org/stocks29/graphex.svg)](https://travis-ci.org/stocks29/graphex)
+
 A library for composing and executing task graphs in elixir.
 
 ### Add as Dependency
