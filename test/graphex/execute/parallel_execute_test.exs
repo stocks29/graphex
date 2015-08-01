@@ -16,6 +16,24 @@ defmodule Graphex.Execute.ParallelExecuteTest do
     :digraph.delete(dag)
   end
 
+  # test "node restarted when it dies and graph executes" do
+  #   {:ok, agent} = Agent.start_link fn -> [] end
+  #
+  #   # given
+  #   dag = Dag.new()
+  #   |> Dag.add_vertex_and_edges(name: :a, fun: fun, deps: [])
+  #   |> Dag.add_vertex_and_edges(name: :b, fun: fun, deps: [:a])
+  #
+  #   expected = %{a: 0, b: 1, c: 1, d: 1, e: 2, f: 3}
+  #
+  #   # when/then
+  #   assert E.exec_bf(dag) == expected
+  #
+  #   # cleanup
+  #   :digraph.delete(dag)
+  #   Agent.stop(agent)
+  # end
+
   test "each node waits for its deps" do
     # given
     dag = test_graph_deps()
