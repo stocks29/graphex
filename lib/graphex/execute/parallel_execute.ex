@@ -2,9 +2,12 @@ defmodule Graphex.Execute.ParallelExecute do
   require Logger
 
   alias Graphex.Dag
+  alias Graphex.GraphSupervisor
+  alias Graphex.VertexServer
 
   def exec_bf(dag) do
-    procs = init_processes(dag)
+    {:ok, sup} = Graphex.Supervisor.start_graph_supervisor
+    procs = init_processes(dag, sup)
     send_go_messages(procs, dag, self())
     accumulate_results(dag)
   end
@@ -30,24 +33,25 @@ defmodule Graphex.Execute.ParallelExecute do
       |> Dict.values
 
       send_procs = [acc_pid|ds_procs]
-      message = {:go, send_procs}
 
-      Logger.debug("sending go message to #{name}: #{inspect message}")
-      send pid, message
+      Logger.debug("sending go message to #{name}: #{inspect send_procs}")
+      VertexServer.go pid, send_procs
     end)
   end
 
-  defp init_processes(dag) do
+  defp init_processes(dag, sup) do
     for v <- Dag.vertices(dag) do
       {v, label} = Dag.vertex(dag, v)
-      {v, spawn_node(v, label[:deps], label[:fun])}
+      {v, spawn_node(v, label[:deps], label[:fun], sup)}
     end
   end
 
-  defp spawn_node(name, deps, fun) do
-    spawn_link(fn ->
-      node_loop(:waiting, name, deps, fun, %{})
-    end)
+  defp spawn_node(name, deps, fun, sup) do
+    {:ok, pid} = GraphSupervisor.start_vertex(sup, name, deps, fun)
+    pid
+    # spawn_link(fn ->
+    #   node_loop(:waiting, name, deps, fun, %{})
+    # end)
   end
 
 
@@ -56,35 +60,35 @@ defmodule Graphex.Execute.ParallelExecute do
   # Node code
   ######
 
-  defp node_loop(:waiting, name, deps, fun, results) do
-    Logger.debug("#{inspect name} waiting for :go")
-    receive do
-      {:go, downstreams} ->
-        Logger.debug("#{inspect name} received :go message")
-        node_loop(:running, name, deps, downstreams, fun, results)
-    end
-  end
-
-  defp node_loop(:running, name, [], downstreams, fun, results) do
-    Logger.debug("#{inspect name} publishing results to downstreams")
-    publish_result(name, fun.(results), downstreams)
-  end
-  defp node_loop(:running, name, deps, downstreams, fun, results) do
-    receive do
-      {:result, dep, result} ->
-        Logger.debug("#{inspect name} received result from #{inspect dep}")
-        node_loop(:running, name, List.delete(deps, dep), downstreams, fun, Map.put(results, dep, result))
-      other ->
-        Logger.warn("received unknown message: #{inspect other}")
-    end
-  end
-
-
-  defp publish_result(name, result, downstreams) do
-    Logger.debug "#{inspect name} publishing result: #{inspect result} to #{inspect downstreams}"
-    Enum.each(downstreams, fn downstream ->
-      send downstream, {:result, name, result}
-    end)
-  end
+  # defp node_loop(:waiting, name, deps, fun, results) do
+  #   Logger.debug("#{inspect name} waiting for :go")
+  #   receive do
+  #     {:go, downstreams} ->
+  #       Logger.debug("#{inspect name} received :go message")
+  #       node_loop(:running, name, deps, downstreams, fun, results)
+  #   end
+  # end
+  #
+  # defp node_loop(:running, name, [], downstreams, fun, results) do
+  #   Logger.debug("#{inspect name} publishing results to downstreams")
+  #   publish_result(name, fun.(results), downstreams)
+  # end
+  # defp node_loop(:running, name, deps, downstreams, fun, results) do
+  #   receive do
+  #     {:result, dep, result} ->
+  #       Logger.debug("#{inspect name} received result from #{inspect dep}")
+  #       node_loop(:running, name, List.delete(deps, dep), downstreams, fun, Map.put(results, dep, result))
+  #     other ->
+  #       Logger.warn("received unknown message: #{inspect other}")
+  #   end
+  # end
+  #
+  #
+  # defp publish_result(name, result, downstreams) do
+  #   Logger.debug "#{inspect name} publishing result: #{inspect result} to #{inspect downstreams}"
+  #   Enum.each(downstreams, fn downstream ->
+  #     send downstream, {:result, name, result}
+  #   end)
+  # end
 
 end
