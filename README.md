@@ -8,12 +8,14 @@ A library for composing and executing task graphs in elixir.
 ### Add as Dependency
 
 ```elixir
-{:graphex, "~> 0.0.1"}
+{:graphex, "~> 0.1.0"}
 ```
+
+Also, be sure to add `:graphex` to your application's list of OTP applications since it has a supervision tree that must be started before using the library.
 
 ## Usage
 
-Each node is represented by a separate process so tasks will run in parallel if possible.
+Each node is represented by a separate process so tasks will run in parallel if possible. Failed nodes will be retried automatically per the default supervision restart settings.
 
 ```elixir
 incr = fn node ->
