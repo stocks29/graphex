@@ -8,7 +8,7 @@ A library for composing and executing task graphs in elixir.
 ### Add as Dependency
 
 ```elixir
-{:graphex, "~> 0.1.0"}
+{:graphex, "~> 0.1.1"}
 ```
 
 Also, be sure to add `:graphex` to your application's list of OTP applications since it has a supervision tree that must be started before using the library.
