@@ -46,7 +46,7 @@ defmodule Graphex do
   end
 
   @doc """
-  Generate and execute a graph and return the results for all vertexes.
+  Generate and execute a graph and return the results for all vertices.
 
   The graph will be automatically deleted after execution.
   """
@@ -66,7 +66,7 @@ defmodule Graphex do
   """
   @spec graph([component]) :: graph
   def graph(components) do
-    # construct dag and add vertexes
+    # construct dag and add vertices
     {graph, verticies} = add_vertices(Dag.new, components)
 
     # Then add edges since we don't want the order of component statements to matter
