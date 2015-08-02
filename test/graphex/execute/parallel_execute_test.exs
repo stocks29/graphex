@@ -1,5 +1,6 @@
 defmodule Graphex.Execute.ParallelExecuteTest do
   use ExUnit.Case, async: true
+  require Logger
 
   alias Graphex.Execute.ParallelExecute, as: E
   alias Graphex.Dag
@@ -16,23 +17,47 @@ defmodule Graphex.Execute.ParallelExecuteTest do
     :digraph.delete(dag)
   end
 
-  # test "node restarted when it dies and graph executes" do
-  #   {:ok, agent} = Agent.start_link fn -> [] end
-  #
-  #   # given
-  #   dag = Dag.new()
-  #   |> Dag.add_vertex_and_edges(name: :a, fun: fun, deps: [])
-  #   |> Dag.add_vertex_and_edges(name: :b, fun: fun, deps: [:a])
-  #
-  #   expected = %{a: 0, b: 1, c: 1, d: 1, e: 2, f: 3}
-  #
-  #   # when/then
-  #   assert E.exec_bf(dag) == expected
-  #
-  #   # cleanup
-  #   :digraph.delete(dag)
-  #   Agent.stop(agent)
-  # end
+  test "dependency node restarted when it dies and graph executes" do
+    {:ok, agent} = Agent.start_link fn -> [:boom, 1] end
+    fun = fn _ ->
+      Agent.get_and_update(agent,  fn [h|t] -> {h, t} end) + 1
+    end
+
+    # given
+    dag = Dag.new()
+    |> Dag.add_vertex_and_edges(name: :flaky, fun: fun, deps: [])
+    |> Dag.add_vertex_and_edges(name: :b, fun: incr_dep(:flaky), deps: [:flaky])
+
+    expected = %{flaky: 2, b: 3}
+
+    # when/then
+    assert E.exec_bf(dag) == expected
+
+    # cleanup
+    :digraph.delete(dag)
+    Agent.stop(agent)
+  end
+
+  test "dependent node restarted when it dies and graph executes" do
+    {:ok, agent} = Agent.start_link fn -> [:boom, 4] end
+    fun = fn r ->
+      Agent.get_and_update(agent, fn [h|t] -> {h, t} end) + r[:a]
+    end
+
+    # given
+    dag = Dag.new()
+    |> Dag.add_vertex_and_edges(name: :a, fun: fn _ -> 1 end, deps: [])
+    |> Dag.add_vertex_and_edges(name: :b, fun: fun, deps: [:a])
+
+    expected = %{a: 1, b: 5}
+
+    # when/then
+    assert E.exec_bf(dag) == expected
+
+    # cleanup
+    :digraph.delete(dag)
+    Agent.stop(agent)
+  end
 
   test "each node waits for its deps" do
     # given

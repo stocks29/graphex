@@ -1,12 +1,12 @@
-defmodule Graphex.GraphSupervisor do
+defmodule Graphex.VertexSupervisor do
   use Supervisor
 
   def start_link(opts \\ []) do
     Supervisor.start_link(__MODULE__, :ok, opts)
   end
 
-  def start_vertex(supervisor, vertex, deps, fun) do
-    Supervisor.start_child(supervisor, [vertex, deps, fun])
+  def start_vertex(supervisor, vertex, deps, fun, downstream_procs, result_server) do
+    Supervisor.start_child(supervisor, [vertex, deps, fun, downstream_procs, result_server])
   end
 
   def init(:ok) do
