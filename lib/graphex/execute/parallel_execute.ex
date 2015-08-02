@@ -5,7 +5,6 @@ defmodule Graphex.Execute.ParallelExecute do
 
   alias Graphex.Supervisor, as: GSupervisor
   alias Graphex.VertexSupervisor
-  alias Graphex.VertexServer
   alias Graphex.ResultServer
 
   @doc """
@@ -13,7 +12,7 @@ defmodule Graphex.Execute.ParallelExecute do
   """
   def exec_bf(dag) do
     supervisor_result_server_txn(Dag.vertices(dag), fn supervisor, result_server ->
-      procs = start_processes(dag, supervisor, result_server)
+      start_processes(dag, supervisor, result_server)
       wait_for_results()
     end)
   end
@@ -32,7 +31,7 @@ defmodule Graphex.Execute.ParallelExecute do
     start_processes(Dag.vertices(dag), %{}, dag, supervisor, result_server)
   end
 
-  defp start_processes([], procs, dag, supervisor, result_server) do
+  defp start_processes([], procs, _dag, _supervisor, _result_server) do
     procs
   end
   defp start_processes([v|vs], procs, dag, supervisor, result_server) do
