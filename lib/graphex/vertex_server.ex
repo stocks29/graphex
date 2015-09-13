@@ -43,7 +43,6 @@ defmodule Graphex.VertexServer do
   def handle_cast(:check_state, %{name: name, deps: [], fun: fun, downstreams: downstreams, results: results} = state) do
     this = self()
     {pid,ref} = spawn_monitor(fn ->
-      :timer.sleep(100)
       Logger.debug("monitored process executing node=#{inspect name} pid=#{inspect self()}")
       result = fun.(results)
       publish_result(name, result, [this|downstreams])
