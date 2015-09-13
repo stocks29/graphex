@@ -17,7 +17,6 @@ defmodule Graphex.Execute.ParallelExecuteTest do
     Dag.delete(dag)
   end
 
-  @tag timeout: 1000
   test "dependency node restarted when it dies and graph executes" do
     {:ok, agent} = Agent.start_link fn -> [:boom, 1] end
     fun = fn _ ->
@@ -39,7 +38,21 @@ defmodule Graphex.Execute.ParallelExecuteTest do
     Agent.stop(agent)
   end
 
-  @tag timeout: 1000
+  test "dependency node not retried wth default tries (1) and deps receive error tuple" do
+    # given
+    fun = fn r -> r[:a] end
+
+    dag = Dag.new()
+    |> Dag.add_vertex_and_edges(name: :a, fun: fn _ -> 1 + :b end, deps: [])
+    |> Dag.add_vertex_and_edges(name: :b, fun: fun, deps: [:a])
+
+    # when/then
+    assert %{a: {:error, {:graphex, error}}, b: {:error, {:graphex, error}}} = E.exec_bf(dag)
+
+    # cleanup
+    Dag.delete(dag)
+  end
+
   test "dependent node restarted when it dies and graph executes" do
     {:ok, agent} = Agent.start_link fn -> [:boom, 4] end
     fun = fn r ->
