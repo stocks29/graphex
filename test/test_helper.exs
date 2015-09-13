@@ -1,3 +1,3 @@
-# Logger.configure(level: :info) 
+Logger.configure(level: :info) 
 
 ExUnit.start()

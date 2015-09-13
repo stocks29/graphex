@@ -57,12 +57,12 @@ defmodule Graphex.VertexServer do
   end
 
   def handle_info({:DOWN, ref, :process, _pid, reason}, %{name: name, ref: ref} = state) do
-    Logger.info "#{inspect name} received :DOWN message from node's execution server: #{inspect reason}"
+    Logger.debug "#{inspect name} received :DOWN message from node's execution server: #{inspect reason}"
     check_state self()
     {:noreply, state}
   end
   def handle_info({:result, name, result}, %{name: name, results: results} = state) do
-    Logger.info "#{inspect name} received this node's result #{inspect result} from monitored process"
+    Logger.debug "#{inspect name} received this node's result #{inspect result} from monitored process"
     new_results = Map.put(results, name, result)
     {:stop, :normal, Map.put(state, :results, new_results)}
   end
