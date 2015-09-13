@@ -14,9 +14,10 @@ defmodule Graphex.Execute.ParallelExecuteTest do
     assert E.exec_bf(dag) == expected
 
     # cleanup
-    :digraph.delete(dag)
+    Dag.delete(dag)
   end
 
+  @tag timeout: 1000
   test "dependency node restarted when it dies and graph executes" do
     {:ok, agent} = Agent.start_link fn -> [:boom, 1] end
     fun = fn _ ->
@@ -34,10 +35,11 @@ defmodule Graphex.Execute.ParallelExecuteTest do
     assert E.exec_bf(dag) == expected
 
     # cleanup
-    :digraph.delete(dag)
+    Dag.delete(dag)
     Agent.stop(agent)
   end
 
+  @tag timeout: 1000
   test "dependent node restarted when it dies and graph executes" do
     {:ok, agent} = Agent.start_link fn -> [:boom, 4] end
     fun = fn r ->
@@ -55,7 +57,7 @@ defmodule Graphex.Execute.ParallelExecuteTest do
     assert E.exec_bf(dag) == expected
 
     # cleanup
-    :digraph.delete(dag)
+    Dag.delete(dag)
     Agent.stop(agent)
   end
 
@@ -80,7 +82,7 @@ defmodule Graphex.Execute.ParallelExecuteTest do
     assert Enum.member?(results[:f], :e)
 
     # cleanup
-    :digraph.delete(dag)
+    Dag.delete(dag)
   end
 
   test "only deps are passed to vertex function" do
@@ -92,7 +94,7 @@ defmodule Graphex.Execute.ParallelExecuteTest do
     assert E.exec_bf(dag) == expected
 
     # cleanup
-    :digraph.delete(dag)
+    Dag.delete(dag)
   end
 
 

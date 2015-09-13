@@ -6,10 +6,17 @@ defmodule Graphex.VertexServer do
 
   ### Public API
 
+  @doc """
+  Start a vertex server
+  """
   def start_link(name, deps, fun, downstream_procs, result_server, opts \\ []) do
     GenServer.start_link(__MODULE__, [name, deps, fun, downstream_procs, result_server], opts)
   end
 
+  @doc """
+  Tell the vertex server to check if all of the deps it's waiting for are
+  complete, and if so, execute this step and publish the result.
+  """
   def check_state(server) do
     GenServer.cast(server, :check_state)
   end
@@ -34,16 +41,32 @@ defmodule Graphex.VertexServer do
   end
 
   def handle_cast(:check_state, %{name: name, deps: [], fun: fun, downstreams: downstreams, results: results} = state) do
-    result = fun.(results)
-    publish_result(name, result, downstreams)
-    new_results = Map.put(results, name, result)
-    {:stop, :normal, Map.put(state, :results, new_results)}
+    this = self()
+    {pid,ref} = spawn_monitor(fn ->
+      :timer.sleep(100)
+      Logger.debug("monitored process executing node=#{inspect name} pid=#{inspect self()}")
+      result = fun.(results)
+      publish_result(name, result, [this|downstreams])
+      Logger.debug("monitored process finished node=#{inspect name} pid=#{inspect self()}")
+    end)
+    Logger.debug("spawned monitored process to execute node #{inspect name} pid=#{inspect pid} ref=#{inspect ref}")
+    {:noreply, Map.put(state, :ref, ref)}
   end
   def handle_cast(:check_state, state) do
     # We must still have some deps we're waiting on results for
     {:noreply, state}
   end
 
+  def handle_info({:DOWN, ref, :process, _pid, reason}, %{name: name, ref: ref} = state) do
+    Logger.info "#{inspect name} received :DOWN message from node's execution server: #{inspect reason}"
+    check_state self()
+    {:noreply, state}
+  end
+  def handle_info({:result, name, result}, %{name: name, results: results} = state) do
+    Logger.info "#{inspect name} received this node's result #{inspect result} from monitored process"
+    new_results = Map.put(results, name, result)
+    {:stop, :normal, Map.put(state, :results, new_results)}
+  end
   def handle_info({:result, dep, result}, %{name: name, results: results, deps: deps} = state) do
     Logger.debug "#{inspect name} received result #{inspect result} from #{inspect dep}"
     check_state self()
