@@ -32,3 +32,15 @@ result = exec_graph :e, [
 
 assert result == 3
 ```
+
+## Errors and Retries
+
+Each node can be automatically retried if the function causes the process to die. In order to automatically retry, just set the `:tries` attribute to a number greater than 1.
+
+```elixir
+  [name: :b, fun: something_that_might_error(), deps: [:some_data], tries: 3],
+```
+
+This would automatically retry vertex `:b` up to 3 times.
+
+If the node fails all tries, it will publish `{:error, {:graphex, some_error}}` to all of the nodes that depend on it.

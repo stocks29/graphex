@@ -26,7 +26,7 @@ defmodule Graphex.Execute.ParallelExecuteTest do
 
     # given
     dag = Dag.new()
-    |> Dag.add_vertex_and_edges(name: :flaky, fun: fun, deps: [])
+    |> Dag.add_vertex_and_edges(name: :flaky, fun: fun, deps: [], tries: 2)
     |> Dag.add_vertex_and_edges(name: :b, fun: incr_dep(:flaky), deps: [:flaky])
 
     expected = %{flaky: 2, b: 3}
@@ -49,7 +49,7 @@ defmodule Graphex.Execute.ParallelExecuteTest do
     # given
     dag = Dag.new()
     |> Dag.add_vertex_and_edges(name: :a, fun: fn _ -> 1 end, deps: [])
-    |> Dag.add_vertex_and_edges(name: :b, fun: fun, deps: [:a])
+    |> Dag.add_vertex_and_edges(name: :b, fun: fun, deps: [:a], tries: 2)
 
     expected = %{a: 1, b: 5}
 

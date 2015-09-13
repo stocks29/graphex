@@ -40,7 +40,7 @@ defmodule Graphex.Execute.ParallelExecute do
     if length(downstreams) == length(downstream_procs) do
       # All deps satisfied
       {v, label} = Dag.vertex(dag, v)
-      pid = spawn_node(v, label[:deps], label[:fun], [result_server|downstream_procs], result_server, supervisor)
+      pid = spawn_node(v, label[:deps], label[:fun], [result_server|downstream_procs], result_server, label[:tries], supervisor)
       procs = Map.put(procs, v, pid)
       start_processes(vs, procs, dag, supervisor, result_server)
     else
@@ -48,8 +48,8 @@ defmodule Graphex.Execute.ParallelExecute do
     end
   end
 
-  defp spawn_node(name, deps, fun, downstream_procs, result_server, sup) do
-    {:ok, pid} = VertexSupervisor.start_vertex(sup, name, deps, fun, downstream_procs, result_server)
+  defp spawn_node(name, deps, fun, downstream_procs, result_server, tries, sup) do
+    {:ok, pid} = VertexSupervisor.start_vertex(sup, name, deps, fun, downstream_procs, result_server, tries)
     pid
   end
 

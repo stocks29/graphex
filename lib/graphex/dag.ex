@@ -72,18 +72,18 @@ defmodule Graphex.Dag do
   """
   @spec add_vertex(dag, Graphex.component) :: dag
   def add_vertex(dag, opts) do
-    add_vertex(dag, opts[:name], opts[:deps], opts[:fun])
+    add_vertex(dag, opts[:name], opts[:deps], opts[:fun], Dict.get(opts, :tries, 1))
   end
 
   @doc """
   Add a vertex to a dag
   """
-  @spec add_vertex(dag, Graphex.vertex, deps, (%{} -> any())) :: dag
-  def add_vertex(dag, name, nil, fun) do
-    add_vertex(dag, name, [], fun)
+  @spec add_vertex(dag, Graphex.vertex, deps, (%{} -> any()), integer) :: dag
+  def add_vertex(dag, name, nil, fun, tries) do
+    add_vertex(dag, name, [], fun, tries)
   end
-  def add_vertex(dag, name, deps, fun) do
-    :digraph.add_vertex(dag, name, %{fun: fun, deps: deps})
+  def add_vertex(dag, name, deps, fun, tries) do
+    :digraph.add_vertex(dag, name, %{fun: fun, deps: deps, tries: tries})
     dag
   end
 
