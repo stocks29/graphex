@@ -38,7 +38,7 @@ assert result == 3
 Each node can be automatically retried if the function causes the process to die. In order to automatically retry, just set the `:tries` attribute to a number greater than 1.
 
 ```elixir
-  [name: :b, fun: something_that_might_error(), deps: [:some_data], tries: 3],
+  [name: :b, fun: &something_that_might_error/0, deps: [:some_data], tries: 3],
 ```
 
 This would automatically retry vertex `:b` up to 3 times.
