@@ -8,7 +8,7 @@ A library for composing and executing task graphs in elixir.
 ### Add as Dependency
 
 ```elixir
-{:graphex, "~> 0.2.0"}
+{:graphex, "~> 0.2.1"}
 ```
 
 Also, be sure to add `:graphex` to your application's list of OTP applications since it has a supervision tree that must be started before using the library.
@@ -43,4 +43,4 @@ Each node can be automatically retried if the function causes the process to die
 
 This would automatically retry vertex `:b` up to 3 times.
 
-If the node fails all tries, it will publish `{:error, {:graphex, some_error}}` to all of the nodes that depend on it.
+If the node fails all tries, it will publish `{:error, {:graphex, some_error}}` to all of the nodes that depend on it. The dependent nodes can then either continue their processing or simply return an error which will be passed along to the nodes which depend on it.

@@ -40,14 +40,13 @@ defmodule Graphex.Execute.ParallelExecuteTest do
 
   test "dependency node not retried wth default tries (1) and deps receive error tuple" do
     # given
-    fun = fn r -> r[:a] end
-
     dag = Dag.new()
-    |> Dag.add_vertex_and_edges(name: :a, fun: fn _ -> 1 + :b end, deps: [])
-    |> Dag.add_vertex_and_edges(name: :b, fun: fun, deps: [:a])
+    |> Dag.add_vertex_and_edges(name: :a, fun: fn _ -> :test end, deps: [])
+    |> Dag.add_vertex_and_edges(name: :b, fun: fn r -> 1 + r[:a] end, deps: [:a])
+    |> Dag.add_vertex_and_edges(name: :c, fun: fn r -> r[:b] end, deps: [:b])
 
     # when/then
-    assert %{a: {:error, {:graphex, error}}, b: {:error, {:graphex, error}}} = E.exec_bf(dag)
+    assert %{a: :test, b: {:error, {:graphex, error}}, c: {:error, {:graphex, error}}} = E.exec_bf(dag)
 
     # cleanup
     Dag.delete(dag)
